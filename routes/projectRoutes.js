@@ -21,10 +21,11 @@ const {
 router.get("/", getProjects);
 router.get("/rankings", getProjectRankings);
 router.get("/categories", getCategories);
-router.get("/:id", getProjectById);
-router.get("/:id/votes", getProjectVotes);
+
 
 // Protected routes (Require Authentication & File Handling)
+router.get("/:id", verifyToken, getProjectById);
+router.get("/:id/votes", verifyToken, getProjectVotes);
 router.post("/", verifyToken, upload.single("image"), createProject);
 router.put("/:id", verifyToken, upload.single("image"), updateProject);
 router.delete("/:id", verifyToken, deleteProject);
