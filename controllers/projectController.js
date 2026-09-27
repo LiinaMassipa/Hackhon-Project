@@ -7,6 +7,7 @@ const getProjects = async (req, res) => {
         const params = [];
 
         if (search) {
+            // Change "name" to "title"
             sql += " AND (LOWER(title) LIKE ? OR LOWER(description) LIKE ?)";
             const searchTerm = `%${search.toLowerCase()}%`;
             params.push(searchTerm, searchTerm);
@@ -18,7 +19,7 @@ const getProjects = async (req, res) => {
         }
 
         const [rows] = await pool.query(sql, params);
-        res.json(rows);
+        res.json({ projects: rows });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: "Failed to retrieve projects" });
@@ -27,17 +28,19 @@ const getProjects = async (req, res) => {
 
 const createProject = async (req, res) => {
     try {
+        // Change "name" to "title" to match your database
         const { title, description, category, githubUrl, demoUrl, teamName } = req.body;
 
+        // Change "name" to "title" in validation
         if (!title || !description || !category) {
             return res.status(400).json({
                 message: "Title, description and category are required"
             });
         }
 
-        // Get uploaded file path from Multer or fallback to text field
         const image = req.file ? `/uploads/${req.file.filename}` : (req.body.image || "");
 
+        // Change "name" to "title" in the SQL query
         const [result] = await pool.query(
             `INSERT INTO projects (title, description, category, github_url, demo_url, image, team_name) 
              VALUES (?, ?, ?, ?, ?, ?, ?)`,
@@ -85,15 +88,16 @@ const updateProject = async (req, res) => {
         }
 
         const existing = rows[0];
+        // Change "title" to match database column
         const title = req.body.title ?? existing.title;
         const description = req.body.description ?? existing.description;
         const category = req.body.category ?? existing.category;
         const githubUrl = req.body.githubUrl ?? existing.github_url;
         const demoUrl = req.body.demoUrl ?? existing.demo_url;
         
-        // Preserve existing image if no new file uploaded
         const image = req.file ? `/uploads/${req.file.filename}` : existing.image;
 
+        // Change "title" in the SQL query
         await pool.query(
             `UPDATE projects SET title=?, description=?, category=?, github_url=?, demo_url=?, image=? WHERE id=?`,
             [title, description, category, githubUrl, demoUrl, image, id]

@@ -19,16 +19,22 @@ export default function App() {
       <Navbar />
       <main className="flex-grow-1">
         <Routes>
-          {/* Default URL redirects to /login if not authenticated */}
-          <Route 
-            path="/" 
-            element={isAuthenticated ? <Home /> : <Navigate to="/login" replace />} 
-          />
-          <Route path="/home" element={<Home />} />
+          {/* Public Home Route */}
+          <Route path="/" element={<Home />} />
+          <Route path="/home" element={<Navigate to="/" replace />} />
+
+          {/* Public Showcase Routes */}
           <Route path="/gallery" element={<Gallery />} />
           <Route path="/projects/:id" element={<ProjectDetails />} />
-          <Route path="/submit" element={<SubmitProject />} />
           <Route path="/leaderboard" element={<Leaderboard />} />
+
+          {/* Protected Submit Route (Requires Login) */}
+          <Route 
+            path="/submit" 
+            element={isAuthenticated ? <SubmitProject /> : <Navigate to="/login" replace />} 
+          />
+
+          {/* Auth Routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="*" element={<NotFound />} />

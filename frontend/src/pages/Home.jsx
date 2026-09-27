@@ -14,18 +14,23 @@ export default function Home() {
     setStatus("loading");
 
     projectsApi
-      .list({ sort: "rating" })
-      .then((data) => {
-        if (cancelled) return;
-        setProjects((data.projects || []).slice(0, 5));
-        setStatus("ready");
-      })
-      .catch(() => {
-        // API not up yet — fall back to mock data so the page still demos well.
-        if (cancelled) return;
-        setProjects(mockProjects.slice(0, 5));
-        setStatus("ready");
-      });
+  .list({ sort: "rating" })
+  .then((data) => {
+    if (cancelled) return;
+    // Handle both array and object formats
+    const projectsArray = Array.isArray(data) ? data : (data.projects || []);
+    setProjects(projectsArray.slice(0, 5));
+    setStatus("ready");
+  })
+  .catch((err) => {
+    if (cancelled) return;
+    console.error('API Error:', err);
+    // Only fallback to mock if it's a network error
+    if (err.message.includes('fetch') || err.message.includes('network')) {
+      setProjects(mockProjects.slice(0, 5));
+    }
+    setStatus("ready");
+  });
 
     return () => {
       cancelled = true;
