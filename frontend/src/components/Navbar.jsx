@@ -1,12 +1,16 @@
-import { NavLink, Link } from "react-router-dom";
+import { NavLink, Link, useNavigate } from "react-router-dom";
 
 export default function Navbar() {
+  const navigate = useNavigate();
+  const isAuthenticated = !!localStorage.getItem("token");
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    navigate("/");
+  };
+
   const navItem = (to, label) => (
-    <NavLink
-      to={to}
-      end={to === "/"}
-      className={({ isActive }) => `nav-link px-2 ${isActive ? "active" : ""}`}
-    >
+    <NavLink to={to} end={to === "/"} className={({ isActive }) => `nav-link px-2 ${isActive ? "active" : ""}`}>
       {label}
     </NavLink>
   );
@@ -19,15 +23,9 @@ export default function Navbar() {
           ShowCase <span className="brand-accent">Gallery</span>
         </Link>
 
-        <button
-          className="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#sgNavContent"
-          aria-controls="sgNavContent"
-          aria-expanded="false"
-          aria-label="Toggle navigation"
-        >
+        <button className="navbar-toggler" type="button" data-bs-toggle="collapse"
+          data-bs-target="#sgNavContent" aria-controls="sgNavContent"
+          aria-expanded="false" aria-label="Toggle navigation">
           <span className="navbar-toggler-icon"></span>
         </button>
 
@@ -38,9 +36,15 @@ export default function Navbar() {
             <li className="nav-item">{navItem("/leaderboard", "Rankings")}</li>
           </ul>
           <div className="d-flex gap-2">
-            <Link to="/submit" className="sg-btn-primary">
-              Submit Your Project
-            </Link>
+            <Link to="/submit" className="sg-btn-primary">Submit Your Project</Link>
+            {isAuthenticated ? (
+              <button onClick={handleLogout} className="sg-btn-outline-light">Logout</button>
+            ) : (
+              <>
+                <Link to="/login" className="sg-btn-outline-light">Login</Link>
+                <Link to="/register" className="sg-btn-primary">Sign Up</Link>
+              </>
+            )}
           </div>
         </div>
       </div>

@@ -6,7 +6,7 @@ const pool = require('../db');
 
 // POST /api/auth/register
 router.post('/register', async (req, res) => {
-    const { name, email, password } = req.body;
+    const { username, email, password } = req.body;
 
     if (!name || !email || !password) {
         return res.status(400).json({ error: 'Please provide name, email, and password.' });
@@ -23,7 +23,7 @@ router.post('/register', async (req, res) => {
 
         const [result] = await pool.query(
             'INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?)',
-            [name, email, passwordHash]
+            [username, email, passwordHash]
         );
 
         const token = jwt.sign(

@@ -12,7 +12,17 @@ import NotFound from "./pages/NotFound";
 
 export default function App() {
   // Check if token exists in localStorage
-  const isAuthenticated = !!localStorage.getItem("token");
+const isAuthenticated = !!localStorage.getItem("token");
+
+// Public Showcase Routes
+//<Route path="/gallery" element={<Gallery />} />
+<Route path="/leaderboard" element={<Leaderboard />} />
+
+{/* Protected: view details + rate (Requires Login) */}
+<Route
+  path="/projects/:id"
+  element={isAuthenticated ? <ProjectDetails /> : <Navigate to="/login" replace />}
+/>
 
   return (
     <div className="d-flex flex-column min-vh-100">
