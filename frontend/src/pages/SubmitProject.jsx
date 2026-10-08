@@ -19,6 +19,7 @@ export default function SubmitProject() {
   const navigate = useNavigate();
   const [form, setForm] = useState(initialForm);
   const [imageFile, setImageFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
   const [errors, setErrors] = useState([]);
   const [status, setStatus] = useState("idle");
 
@@ -135,18 +136,39 @@ export default function SubmitProject() {
             </div>
 
             <div className="mb-3">
-              <label htmlFor="image" className="form-label">
-                Project Image *
-              </label>
-              <input
-                id="image"
-                type="file"
-                className="form-control"
-                accept="image/png, image/jpeg, image/jpg, image/webp"
-                onChange={(e) => setImageFile(e.target.files[0])}
-                required
-              />
-            </div>
+                  <label htmlFor="image" className="form-label">
+                    Project Image *
+                  </label>
+                  <input
+                    id="image"
+                    type="file"
+                    className="form-control"
+                    accept="image/png, image/jpeg, image/jpg, image/webp"
+                    onChange={(e) => {
+                      const f = e.target.files[0];
+                      setImageFile(f);
+                      if (f) setPreviewUrl(URL.createObjectURL(f));
+                      else setPreviewUrl(null);
+                    }}
+                    required
+                  />
+                  {previewUrl && (
+                    <div className="sg-image-preview mt-3">
+                      <img src={previewUrl} alt="Preview" />
+                      <button
+                        type="button"
+                        className="sg-image-preview-remove"
+                        onClick={() => {
+                          setImageFile(null);
+                          setPreviewUrl(null);
+                        }}
+                        aria-label="Remove image"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  )}
+                </div> 
 
             <div className="mb-3">
               <label htmlFor="tagline" className="form-label">

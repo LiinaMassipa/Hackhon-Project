@@ -3,7 +3,14 @@ export function LoadingGrid({ count = 6 }) {
     <div className="row g-4">
       {Array.from({ length: count }).map((_, i) => (
         <div className="col-12 col-sm-6 col-lg-4" key={i}>
-          <div className="sg-skeleton" aria-hidden="true"></div>
+          <div className="sg-skeleton" aria-hidden="true">
+            <div className="sg-skeleton-thumb" />
+            <div className="sg-skeleton-body">
+              <div className="sg-skeleton-line" />
+              <div className="sg-skeleton-line short" />
+              <div className="sg-skeleton-line tiny" />
+            </div>
+          </div>
         </div>
       ))}
     </div>

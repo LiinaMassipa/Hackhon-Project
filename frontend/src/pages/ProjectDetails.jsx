@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { ErrorState } from "../components/StateBlocks";
 import { projectsApi } from "../api/api";
-import { mockProjects } from "../data/mockProjects";
 
 export default function ProjectDetails() {
   const { id } = useParams();
@@ -23,16 +22,28 @@ export default function ProjectDetails() {
         setProject(item);
         setStatus("ready");
       })
-      .catch(() => {
+      .catch((err) => {
         if (cancelled) return;
-        const fallback = mockProjects.find((p) => String(p.id) === String(id));
-        if (fallback) {
-          setProject({ ...fallback });
-          setStatus("ready");
-        } else {
-          setStatus("error");
-        }
+        console.error("Failed to load project:", err);
+        setStatus("error");
       });
+
+       // Check if the current user already voted
+  const token = localStorage.getItem("token");
+  if (token) {
+    projectsApi
+      .getMyVote(id)
+      .then((data) => {
+        if (cancelled) return;
+        if (data.voted) {
+          setMyRating(data.score);
+          setVoteState("done");
+        }
+      })
+      .catch(() => {
+        // Not logged in or no vote — ignore
+      });
+  }
 
     return () => {
       cancelled = true;
@@ -43,55 +54,18 @@ export default function ProjectDetails() {
     setMyRating(rating);
     setVoteState("submitting");
 
-    // Helper function to calculate updated votes & average rating
-    const calculateNewStats = (item) => {
-      const currentVotes = Number(item.votes) || 0;
-      const currentRating = Number(item.rating) || 0;
-      const newVotes = currentVotes + 1;
-      const newRating = Number(
-        (((currentRating * currentVotes) + rating) / newVotes).toFixed(2)
-      );
-      return { votes: newVotes, rating: newRating };
-    };
-
-    // 1. Sync in-memory mockProjects array so Leaderboard & Gallery pick up the vote
-    const mockIndex = mockProjects.findIndex((p) => String(p.id) === String(id));
-    if (mockIndex !== -1) {
-      const newStats = calculateNewStats(mockProjects[mockIndex]);
-      mockProjects[mockIndex] = {
-        ...mockProjects[mockIndex],
-        ...newStats,
-      };
-    }
-
     try {
-      const updated = await projectsApi.vote(id, rating);
-      const payload = updated?.project || updated || {};
+      await projectsApi.vote(id, rating);
 
-      // 2. Merge server API response into local state
-      setProject((prev) => {
-        if (!prev) return prev;
-        return {
-          ...prev,
-          ...payload,
-          rating: typeof payload.rating === "number" ? payload.rating : prev.rating,
-          votes: typeof payload.votes === "number" ? payload.votes : prev.votes,
-          image: payload.image || payload.image_url || prev.image || prev.image_url,
-          tech: payload.tech || prev.tech,
-        };
-      });
+      // Refetch the project so votes/rating come from the DB, not local math
+      const fresh = await projectsApi.get(id);
+      const updated = fresh?.project || fresh;
+
+      setProject((prev) => ({ ...prev, ...updated }));
       setVoteState("done");
-    } catch {
-      // 3. Fallback optimistic update if backend API request fails
-      setProject((prev) => {
-        if (!prev) return prev;
-        const newStats = calculateNewStats(prev);
-        return {
-          ...prev,
-          ...newStats,
-        };
-      });
-      setVoteState("done");
+    } catch (err) {
+      console.error("Vote failed:", err);
+      setVoteState("error");
     }
   }
 
@@ -117,34 +91,44 @@ export default function ProjectDetails() {
   }
 
   // Safe Property Extraction & Fallbacks
-  const name = project.name || project.title || "Untitled Project";
+  const name = project.title || project.name || "Untitled Project";
   const tagline = project.tagline || "";
   const description = project.description || "No description provided.";
-  const team = project.team || "Anonymous";
+  const team = project.team_name || project.team || "Anonymous";
   const category = project.category || "General";
-  const rating = typeof project.rating === "number" ? project.rating.toFixed(1) : "0.0";
+  const rating = Number(project.rating || 0).toFixed(1);
   const votes = project.votes || 0;
 
-  // Safe Tech Stack Normalization
+  // Safe Tech Stack Normalization (DB uses techInput)
   let techList = [];
-  if (Array.isArray(project.tech)) {
-    techList = project.tech;
-  } else if (typeof project.tech === "string") {
+  const rawTech = project.techInput || project.tech;
+  if (Array.isArray(rawTech)) {
+    techList = rawTech;
+  } else if (typeof rawTech === "string") {
     try {
-      const parsed = JSON.parse(project.tech);
-      techList = Array.isArray(parsed) ? parsed : [project.tech];
+      const parsed = JSON.parse(rawTech);
+      techList = Array.isArray(parsed) ? parsed : [rawTech];
     } catch {
-      techList = project.tech.split(",").map((t) => t.trim()).filter(Boolean);
+      techList = rawTech.split(",").map((t) => t.trim()).filter(Boolean);
     }
   }
 
   // Image Normalization
   const rawImage = project.image || project.image_url;
-  const imageUrl = rawImage
-    ? rawImage.startsWith("http")
-      ? rawImage
-      : `http://localhost:5000/${rawImage.replace(/^\/+/, "")}`
-    : null;
+  let imageUrl = null;
+  if (rawImage) {
+    if (rawImage.startsWith("http")) {
+      imageUrl = rawImage;
+    } else if (rawImage.startsWith("/uploads/")) {
+      imageUrl = `http://localhost:5000${rawImage}`;
+    } else {
+      imageUrl = rawImage;
+    }
+  }
+
+  // Links (DB uses github_url, demo_url)
+  const githubUrl = project.github_url || project.github;
+  const demoUrl = project.demo_url || project.demo;
 
   return (
     <section className="container my-5">
@@ -195,9 +179,9 @@ export default function ProjectDetails() {
           <p style={{ whiteSpace: "pre-line" }}>{description}</p>
 
           <div className="d-flex gap-3 mt-4">
-            {project.github && (
+            {githubUrl && (
               <a
-                href={project.github}
+                href={githubUrl}
                 target="_blank"
                 rel="noreferrer"
                 className="sg-btn-outline-light"
@@ -207,8 +191,13 @@ export default function ProjectDetails() {
                 GitHub
               </a>
             )}
-            {project.demo && (
-              <a href={project.demo} target="_blank" rel="noreferrer" className="sg-btn-primary">
+            {demoUrl && (
+              <a
+                href={demoUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="sg-btn-primary"
+              >
                 <i className="bi bi-box-arrow-up-right me-2"></i>
                 Live Demo
               </a>
@@ -242,14 +231,18 @@ export default function ProjectDetails() {
             <hr />
 
             <h6>Rate this project</h6>
-            <div className="d-flex gap-1 mb-2" role="group" aria-label="Rate this project">
+            <div
+              className="d-flex gap-1 mb-2"
+              role="group"
+              aria-label="Rate this project"
+            >
               {[1, 2, 3, 4, 5].map((n) => (
                 <button
                   key={n}
                   type="button"
                   className="btn btn-sm p-1"
                   onClick={() => handleVote(n)}
-                  disabled={voteState === "submitting" || voteState === "done"}
+                  disabled={voteState === "submitting"}
                   aria-label={`Rate ${n} stars`}
                 >
                   <i
@@ -259,9 +252,14 @@ export default function ProjectDetails() {
                 </button>
               ))}
             </div>
-            {voteState === "done" && (
+            {voteState === "done" && myRating > 0 && (
               <p className="small text-success mb-0">
-                <i className="bi bi-check-circle me-1"></i> Thanks for voting!
+                <i className="bi bi-check-circle me-1"></i> Your rating: {myRating} star{myRating !== 1 && "s"}
+              </p>
+            )}
+            {voteState === "error" && (
+              <p className="small text-danger mb-0">
+                <i className="bi bi-exclamation-circle me-1"></i> Vote failed. Try again.
               </p>
             )}
           </div>

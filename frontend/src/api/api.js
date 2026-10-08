@@ -5,24 +5,20 @@
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
 
 // Routes that require authentication
-const PROTECTED_ROUTES = ['/projects', '/projects/'];
-
-function isProtectedRoute(path) {
-  // Check if the route needs authentication
-  // POST, PUT, DELETE are always protected
-  // GET routes that end with /vote or /submit are protected
-  return PROTECTED_ROUTES.some(route => path.startsWith(route));
+function isProtectedRoute(path, method) {
+  // POST, PUT, DELETE, PATCH are always protected
+  if (["POST", "PUT", "DELETE", "PATCH"].includes(method)) return true;
+  // Specific GET routes that need auth
+  return path.includes("/vote") || path.includes("/my-vote");
 }
 
 async function request(path, options = {}) {
   const token = localStorage.getItem("token");
   const headers = {};
 
-  // Only attach JWT token if the route requires authentication
-  // AND the token exists
-  const isProtected = isProtectedRoute(path) || 
-                      ['POST', 'PUT', 'DELETE', 'PATCH'].includes(options.method || 'GET');
-  
+  const method = options.method || "GET";
+  const isProtected = isProtectedRoute(path, method);
+
   if (token && isProtected) {
     headers["Authorization"] = `Bearer ${token}`;
   }
@@ -63,10 +59,13 @@ export const projectsApi = {
     const query = new URLSearchParams(
       Object.fromEntries(Object.entries(params).filter(([, v]) => v))
     ).toString();
-    return request(`/projects${query ? `?${query}` : ""}`, { method: 'GET' });
+    return request(`/projects${query ? `?${query}` : ""}`, { method: "GET" });
   },
-  get: (id) => request(`/projects/${id}`, { method: 'GET' }),
-  
+  get: (id) => request(`/projects/${id}`, { method: "GET" }),
+  getMyVote: (id) => request(`/projects/${id}/my-vote`, { method: "GET" }),
+
+ rankings: () => request("/projects/rankings", { method: "GET" }),
+
   create: (payload) => {
     const isFormData = payload instanceof FormData;
     return request("/projects", {

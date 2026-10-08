@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import ProtectedRoute from "./components/ProtectedRoute";
 import Home from "./pages/Home";
 import Gallery from "./pages/Gallery";
 import ProjectDetails from "./pages/ProjectDetails";
@@ -11,34 +12,33 @@ import Register from "./pages/Register";
 import NotFound from "./pages/NotFound";
 
 export default function App() {
-  // Check if token exists in localStorage
-  const isAuthenticated = !!localStorage.getItem("token");
 
   return (
     <div className="d-flex flex-column min-vh-100">
       <Navbar />
       <main className="flex-grow-1">
-        <Routes>
-          {/* Public Home Route */}
-          <Route path="/" element={<Home />} />
-          <Route path="/home" element={<Navigate to="/" replace />} />
+    <Routes>
+  {/* Public routes */}
+  <Route path="/" element={<Home />} />
+  <Route path="/gallery" element={<Gallery />} />
+  <Route path="/projects/:id" element={<ProjectDetails />} />
+  <Route path="/leaderboard" element={<Leaderboard />} />
+  <Route path="/login" element={<Login />} />
+  <Route path="/register" element={<Register />} />
 
-          {/* Public Showcase Routes */}
-          <Route path="/gallery" element={<Gallery />} />
-          <Route path="/projects/:id" element={<ProjectDetails />} />
-          <Route path="/leaderboard" element={<Leaderboard />} />
+  {/* Protected route */}
+  <Route
+    path="/submit"
+    element={
+      <ProtectedRoute>
+        <SubmitProject />
+      </ProtectedRoute>
+    }
+  />
 
-          {/* Protected Submit Route (Requires Login) */}
-          <Route 
-            path="/submit" 
-            element={isAuthenticated ? <SubmitProject /> : <Navigate to="/login" replace />} 
-          />
-
-          {/* Auth Routes */}
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+  {/* 404 */}
+  <Route path="*" element={<NotFound />} />
+</Routes>  
       </main>
       <Footer />
     </div>
