@@ -1,15 +1,39 @@
-import { useEffect, useState } from "react";
-import { NavLink, Link } from "react-router-dom";
+import { NavLink, Link, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 
 export default function Navbar() {
-  const [scrolled, setScrolled] = useState(false);
+  const navigate = useNavigate();
+  const [user, setUser] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(
+    !!localStorage.getItem("token")
+  );
 
   useEffect(() => {
-    function onScroll() {
-      setScrolled(window.scrollY > 12);
-    }
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    const syncAuth = () => {
+      const token = localStorage.getItem("token");
+      setIsAuthenticated(!!token);
+
+      const userData = localStorage.getItem("user");
+      if (userData) {
+        try {
+          setUser(JSON.parse(userData));
+        } catch (e) {
+          console.error("Error parsing user data:", e);
+          setUser(null);
+        }
+      } else {
+        setUser(null);
+      }
+    };
+
+    syncAuth();
+    window.addEventListener("auth-change", syncAuth);
+    window.addEventListener("storage", syncAuth);
+
+    return () => {
+      window.removeEventListener("auth-change", syncAuth);
+      window.removeEventListener("storage", syncAuth);
+    };
   }, []);
 
   const navItem = (to, label) => (
@@ -22,8 +46,15 @@ export default function Navbar() {
     </NavLink>
   );
 
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    window.dispatchEvent(new Event("auth-change"));
+    navigate("/");
+  };
+
   return (
-    <nav className={`navbar navbar-expand-lg sg-navbar sticky-top ${scrolled ? "sg-navbar--scrolled" : ""}`}>
+    <nav className="navbar navbar-expand-lg sg-navbar sticky-top">
       <div className="container">
         <Link className="navbar-brand d-flex align-items-center gap-2" to="/">
           <span aria-hidden="true">🚀</span>
@@ -48,10 +79,37 @@ export default function Navbar() {
             <li className="nav-item">{navItem("/gallery", "Projects")}</li>
             <li className="nav-item">{navItem("/leaderboard", "Rankings")}</li>
           </ul>
-          <div className="d-flex gap-2">
-            <Link to="/submit" className="sg-btn-primary">
-              Submit Your Project
-            </Link>
+
+          <div className="d-flex gap-2 align-items-center">
+            {isAuthenticated ? (
+              <>
+                <Link
+                  to="/profile"
+                  className="d-flex align-items-center text-decoration-none navbar-text"
+                  title="View your profile"
+                >
+                  <span className="sg-user-avatar" aria-hidden="true">
+                    {(user?.name || "U").trim().charAt(0).toUpperCase()}
+                  </span>
+                  {user?.name || "My Profile"}
+                </Link>
+                <Link to="/submit" className="sg-btn-primary">
+                  Submit Project
+                </Link>
+                <button onClick={handleLogout} className="sg-btn-outline-danger">
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <Link to="/login" className="sg-btn-outline-primary">
+                  Login
+                </Link>
+                <Link to="/register" className="sg-btn-primary">
+                  Register
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </div>
