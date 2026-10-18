@@ -6,10 +6,11 @@ const pool = require('../db');
 
 // POST /api/auth/register
 router.post('/register', async (req, res) => {
-    const { name, email, password } = req.body;
+    const name = req.body.name || req.body.username;
+    const { email, password } = req.body;
 
     if (!name || !email || !password) {
-        return res.status(400).json({ error: 'Please provide name, email, and password.' });
+        return res.status(400).json({ error: 'Please provide name (or username), email, and password.' });
     }
 
     try {

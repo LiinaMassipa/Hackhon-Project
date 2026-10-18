@@ -305,3 +305,21 @@ a {
   .sg-hero { padding: 3rem 0 5rem; text-align: center; }
   .sg-hero p.lead { margin-left: auto; margin-right: auto; }
 }
+
+/* ---------- User Profile & Showcase ---------- */
+.mt-n5 {
+  margin-top: -3.5rem !important;
+}
+
+.sg-profile-header {
+  position: relative;
+}
+
+.sg-project-card:hover .sg-project-thumb img {
+  transform: scale(1.05);
+}
+
+.sg-project-card .desc {
+  line-height: 1.45;
+}
+

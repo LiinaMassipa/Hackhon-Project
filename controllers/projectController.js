@@ -2,7 +2,7 @@ const pool = require("../db");
 
 const getProjects = async (req, res) => {
     try {
-        const { search, category } = req.query;
+        const { search, category, userId } = req.query;
         let sql = "SELECT * FROM projects WHERE 1=1";
         const params = [];
 
@@ -17,6 +17,11 @@ const getProjects = async (req, res) => {
             params.push(category.toLowerCase());
         }
 
+        if (userId) {
+            sql += " AND (user_id = ? OR id = ?)";
+            params.push(userId, userId);
+        }
+
         const [rows] = await pool.query(sql, params);
         res.json(rows);
     } catch (err) {
@@ -27,7 +32,13 @@ const getProjects = async (req, res) => {
 
 const createProject = async (req, res) => {
     try {
-        const { title, description, category, githubUrl, demoUrl, teamName } = req.body;
+        const title = req.body.title || req.body.name;
+        const description = req.body.description;
+        const category = req.body.category;
+        const githubUrl = req.body.githubUrl || req.body.github || "";
+        const demoUrl = req.body.demoUrl || req.body.demo || "";
+        const teamName = req.body.teamName || req.body.team || "";
+        const userId = req.user ? req.user.id : (req.body.userId || null);
 
         if (!title || !description || !category) {
             return res.status(400).json({
@@ -38,20 +49,35 @@ const createProject = async (req, res) => {
         // Get uploaded file path from Multer or fallback to text field
         const image = req.file ? `/uploads/${req.file.filename}` : (req.body.image || "");
 
-        const [result] = await pool.query(
-            `INSERT INTO projects (title, description, category, github_url, demo_url, image, team_name) 
-             VALUES (?, ?, ?, ?, ?, ?, ?)`,
-            [title, description, category, githubUrl || "", demoUrl || "", image, teamName || ""]
-        );
+        let result;
+        try {
+            [result] = await pool.query(
+                `INSERT INTO projects (title, description, category, github_url, demo_url, image, team_name, user_id) 
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+                [title, description, category, githubUrl, demoUrl, image, teamName, userId]
+            );
+        } catch (dbErr) {
+            // Graceful fallback if user_id column doesn't exist yet in local database
+            if (dbErr.message && dbErr.message.includes("user_id")) {
+                [result] = await pool.query(
+                    `INSERT INTO projects (title, description, category, github_url, demo_url, image, team_name) 
+                     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                    [title, description, category, githubUrl, demoUrl, image, teamName]
+                );
+            } else {
+                throw dbErr;
+            }
+        }
 
         res.status(201).json({
             id: result.insertId,
             title,
             description,
             category,
-            githubUrl: githubUrl || "",
-            demoUrl: demoUrl || "",
-            image
+            githubUrl,
+            demoUrl,
+            image,
+            userId
         });
     } catch (err) {
         console.error(err);
@@ -85,21 +111,28 @@ const updateProject = async (req, res) => {
         }
 
         const existing = rows[0];
-        const title = req.body.title ?? existing.title;
+
+        // Ownership verification (allow if user owns project or is admin, or if project has no user_id)
+        if (existing.user_id && req.user && existing.user_id !== req.user.id && req.user.role !== 'admin') {
+            return res.status(403).json({ message: "Unauthorized to edit this project" });
+        }
+
+        const title = req.body.title ?? req.body.name ?? existing.title;
         const description = req.body.description ?? existing.description;
         const category = req.body.category ?? existing.category;
-        const githubUrl = req.body.githubUrl ?? existing.github_url;
-        const demoUrl = req.body.demoUrl ?? existing.demo_url;
+        const githubUrl = req.body.githubUrl ?? req.body.github ?? existing.github_url;
+        const demoUrl = req.body.demoUrl ?? req.body.demo ?? existing.demo_url;
+        const teamName = req.body.teamName ?? req.body.team ?? existing.team_name;
         
         // Preserve existing image if no new file uploaded
-        const image = req.file ? `/uploads/${req.file.filename}` : existing.image;
+        const image = req.file ? `/uploads/${req.file.filename}` : (req.body.image || existing.image);
 
         await pool.query(
-            `UPDATE projects SET title=?, description=?, category=?, github_url=?, demo_url=?, image=? WHERE id=?`,
-            [title, description, category, githubUrl, demoUrl, image, id]
+            `UPDATE projects SET title=?, description=?, category=?, github_url=?, demo_url=?, image=?, team_name=? WHERE id=?`,
+            [title, description, category, githubUrl, demoUrl, image, teamName, id]
         );
 
-        res.json({ id, title, description, category, githubUrl, demoUrl, image });
+        res.json({ id, title, description, category, githubUrl, demoUrl, image, teamName });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: "Failed to update project" });
@@ -113,6 +146,13 @@ const deleteProject = async (req, res) => {
 
         if (rows.length === 0) {
             return res.status(404).json({ message: "Project not found" });
+        }
+
+        const existing = rows[0];
+
+        // Ownership verification (allow if user owns project or is admin, or if project has no user_id)
+        if (existing.user_id && req.user && existing.user_id !== req.user.id && req.user.role !== 'admin') {
+            return res.status(403).json({ message: "Unauthorized to delete this project" });
         }
 
         await pool.query("DELETE FROM projects WHERE id = ?", [id]);

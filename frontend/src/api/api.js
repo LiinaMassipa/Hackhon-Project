@@ -77,3 +77,12 @@ export const projectsApi = {
       body: JSON.stringify({ rating }),
     }),
 };
+
+export const usersApi = {
+  getProfile: (userId) => request(`/users/${userId}`),
+  updateProfile: (userId, data) =>
+    request(`/users/${userId}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }),
+};

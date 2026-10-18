@@ -60,9 +60,12 @@ export default function SubmitProject() {
     formData.append("tagline", form.tagline.trim());
     formData.append("description", form.description.trim());
     formData.append("team", form.team.trim());
+    formData.append("teamName", form.team.trim());
     formData.append("category", form.category);
     formData.append("github", form.github.trim());
+    formData.append("githubUrl", form.github.trim());
     formData.append("demo", form.demo.trim());
+    formData.append("demoUrl", form.demo.trim());
 
     const techArray = form.techInput
       .split(",")

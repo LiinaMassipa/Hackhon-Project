@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -7,6 +8,10 @@ export default function Login() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const { login } = useAuth();
+
+  const from = location.state?.from?.pathname || "/profile";
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -23,11 +28,12 @@ export default function Login() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || data.message || "Login failed");
 
-      // Store JWT in localStorage
-      localStorage.setItem("token", data.token);
+      // Update reactive auth state and localStorage
+      const userPayload = data.user || { email, name: email.split("@")[0] };
+      login(data.token, userPayload);
       
-      // Redirect straight to project submission form
-      navigate("/submit");
+      // Redirect to original intended location or profile
+      navigate(from, { replace: true });
     } catch (err) {
       setError(err.message);
     } finally {

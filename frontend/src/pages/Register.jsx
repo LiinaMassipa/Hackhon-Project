@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 export default function Register() {
   const [username, setUsername] = useState("");
@@ -8,6 +9,7 @@ export default function Register() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleRegister = async (e) => {
     e.preventDefault();
@@ -18,7 +20,7 @@ export default function Register() {
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, email, password }),
+        body: JSON.stringify({ name: username, username, email, password }),
       });
 
       const data = await res.json();
@@ -26,8 +28,9 @@ export default function Register() {
 
       // Auto-login if token is returned, or send to login
       if (data.token) {
-        localStorage.setItem("token", data.token);
-        navigate("/submit");
+        const userPayload = data.user || { username, email, name: username };
+        login(data.token, userPayload);
+        navigate("/profile");
       } else {
         alert("Account created! Please log in.");
         navigate("/login");
