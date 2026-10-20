@@ -70,7 +70,21 @@ router.post('/login', async (req, res) => {
 
         res.json({
             token,
-            user: { id: user.id, name: user.name, email: user.email, role: user.role }
+            user: {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                bio: user.bio || '',
+                headline: user.headline || '',
+                skills: user.skills || '',
+                avatarUrl: user.avatar_url || '',
+                location: user.location || '',
+                github: user.github_url || '',
+                linkedin: user.linkedin_url || '',
+                website: user.website_url || '',
+                twitter: user.twitter_url || ''
+            }
         });
     } catch (err) {
         res.status(500).json({ error: 'Server error during login.' });

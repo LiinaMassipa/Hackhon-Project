@@ -1,21 +1,24 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 /**
  * UserProfileHeader
  *
- * Displays user identity, bio, social/portfolio links, aggregate metrics,
- * and handles "Edit Profile" modal for the authenticated owner.
+ * Displays user identity, bio, skills, social/portfolio links, aggregate metrics,
+ * and handles "Edit Profile" modal (automatically triggered for new onboarding users).
  */
 export default function UserProfileHeader({
   profile = {},
   isOwnProfile = true,
+  isOnboarding = false,
+  autoOpenEdit = false,
   onUpdateProfile,
 }) {
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState(autoOpenEdit);
   const [formData, setFormData] = useState({
     name: profile.name || "",
     username: profile.username || "",
     headline: profile.headline || "",
+    skills: profile.skills || "",
     bio: profile.bio || "",
     location: profile.location || "",
     avatarUrl: profile.avatarUrl || "",
@@ -27,12 +30,20 @@ export default function UserProfileHeader({
 
   const [avatarError, setAvatarError] = useState(false);
 
-  // Sync edit form if profile props change
-  const handleOpenEdit = () => {
+  // Auto-open modal if onboarding trigger changes
+  useEffect(() => {
+    if (autoOpenEdit) {
+      setIsEditing(true);
+    }
+  }, [autoOpenEdit]);
+
+  // Sync form when profile data loads or changes
+  useEffect(() => {
     setFormData({
       name: profile.name || "",
       username: profile.username || "",
       headline: profile.headline || "",
+      skills: profile.skills || "",
       bio: profile.bio || "",
       location: profile.location || "",
       avatarUrl: profile.avatarUrl || "",
@@ -41,6 +52,9 @@ export default function UserProfileHeader({
       website: profile.socialLinks?.website || "",
       twitter: profile.socialLinks?.twitter || "",
     });
+  }, [profile]);
+
+  const handleOpenEdit = () => {
     setIsEditing(true);
   };
 
@@ -51,6 +65,7 @@ export default function UserProfileHeader({
       name: formData.name.trim(),
       username: formData.username.trim().replace(/^@/, ""),
       headline: formData.headline.trim(),
+      skills: formData.skills.trim(),
       bio: formData.bio.trim(),
       location: formData.location.trim(),
       avatarUrl: formData.avatarUrl.trim(),
@@ -60,6 +75,7 @@ export default function UserProfileHeader({
         website: formData.website.trim(),
         twitter: formData.twitter.trim(),
       },
+      hasProfileData: true,
     };
 
     if (onUpdateProfile) {
@@ -83,8 +99,50 @@ export default function UserProfileHeader({
     .slice(0, 2)
     .toUpperCase();
 
+  // Skills chips
+  const skillsList = profile.skills
+    ? (Array.isArray(profile.skills) ? profile.skills : profile.skills.split(","))
+        .map((s) => s.trim())
+        .filter(Boolean)
+    : [];
+
   return (
     <div className="sg-profile-header mb-5">
+      {/* New User Onboarding Prompt Banner */}
+      {isOwnProfile && isOnboarding && (
+        <div className="container px-3 px-md-4 mb-4">
+          <div
+            className="alert border-0 rounded-4 shadow-sm p-4 text-white d-flex flex-wrap align-items-center justify-content-between gap-3"
+            style={{
+              background: "linear-gradient(135deg, var(--sg-violet-600), var(--sg-navy-900))",
+            }}
+          >
+            <div className="d-flex align-items-center gap-3">
+              <div
+                className="rounded-circle bg-white bg-opacity-25 d-flex align-items-center justify-content-center p-3"
+                style={{ width: 54, height: 54, fontSize: "1.6rem" }}
+              >
+                👋
+              </div>
+              <div>
+                <h5 className="fw-bold mb-1">Welcome aboard, {profile.name || "Creator"}!</h5>
+                <p className="mb-0 text-white-50" style={{ fontSize: "0.92rem" }}>
+                  Your profile is currently empty. Complete your profile details (bio, skills, and links) so judges and fellow hackers can get to know you.
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              className="sg-btn-primary px-4 py-2 border-0 fw-semibold text-white shadow"
+              onClick={handleOpenEdit}
+            >
+              <i className="bi bi-pencil-square me-2"></i>
+              Set Up Profile Now
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Decorative Profile Cover Banner */}
       <div
         className="rounded-4 overflow-hidden position-relative shadow-sm"
@@ -99,7 +157,7 @@ export default function UserProfileHeader({
         </div>
       </div>
 
-      {/* Profile Details Container */}
+      {/* Profile Details Card */}
       <div className="container px-3 px-md-4">
         <div className="card border-0 shadow-sm rounded-4 p-4 mt-n5 position-relative bg-white">
           <div className="row g-4 align-items-start">
@@ -132,7 +190,7 @@ export default function UserProfileHeader({
                   </div>
                 )}
 
-                {/* Online / Active status dot */}
+                {/* Status Dot */}
                 <span
                   className="position-absolute bottom-0 end-0 p-2 bg-success border border-2 border-white rounded-circle"
                   title="Active Hacker"
@@ -145,10 +203,10 @@ export default function UserProfileHeader({
               <div className="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-1">
                 <div>
                   <h2 className="fw-bold mb-0" style={{ color: "var(--sg-navy-900)" }}>
-                    {profile.name}
+                    {profile.name || "Anonymous Developer"}
                   </h2>
                   <span className="text-muted fw-semibold">
-                    @{profile.username}
+                    @{profile.username || "creator"}
                   </span>
                 </div>
 
@@ -161,24 +219,46 @@ export default function UserProfileHeader({
                       onClick={handleOpenEdit}
                     >
                       <i className="bi bi-pencil"></i>
-                      Edit Profile
+                      {isOnboarding ? "Complete Profile" : "Edit Profile"}
                     </button>
                   </div>
                 )}
               </div>
 
               {/* Headline */}
-              {profile.headline && (
+              {profile.headline ? (
                 <p className="fw-medium text-dark mb-2" style={{ fontSize: "1.05rem" }}>
                   {profile.headline}
                 </p>
-              )}
+              ) : isOwnProfile && isOnboarding ? (
+                <p className="text-muted fst-italic mb-2 small">
+                  No headline added yet (e.g., "Full-Stack Developer & AI Enthusiast").
+                </p>
+              ) : null}
 
               {/* Bio */}
-              {profile.bio && (
+              {profile.bio ? (
                 <p className="text-muted mb-3" style={{ fontSize: "0.95rem", lineHeight: "1.5" }}>
                   {profile.bio}
                 </p>
+              ) : isOwnProfile && isOnboarding ? (
+                <p className="text-muted fst-italic mb-3 small">
+                  Share a short bio so other developers and teams know what you love building.
+                </p>
+              ) : null}
+
+              {/* Skills Tags */}
+              {skillsList.length > 0 && (
+                <div className="mb-3 d-flex flex-wrap gap-1 align-items-center">
+                  <span className="text-muted small me-1">
+                    <i className="bi bi-tools me-1"></i>Skills:
+                  </span>
+                  {skillsList.map((skill, index) => (
+                    <span key={index} className="sg-badge sg-badge-default">
+                      {skill}
+                    </span>
+                  ))}
+                </div>
               )}
 
               {/* Metadata tags: Location & Joined Date */}
@@ -246,6 +326,13 @@ export default function UserProfileHeader({
                     X
                   </a>
                 )}
+                {(!profile.socialLinks || Object.values(profile.socialLinks).every((v) => !v)) &&
+                  isOwnProfile &&
+                  isOnboarding && (
+                    <span className="text-muted small fst-italic">
+                      No social links added yet.
+                    </span>
+                  )}
               </div>
             </div>
           </div>
@@ -305,7 +392,7 @@ export default function UserProfileHeader({
         </div>
       </div>
 
-      {/* Edit Profile Modal */}
+      {/* Edit / Onboarding Profile Modal */}
       {isEditing && (
         <div
           className="modal show d-block"
@@ -317,7 +404,7 @@ export default function UserProfileHeader({
               <div className="modal-header border-bottom">
                 <h5 className="modal-title fw-bold">
                   <i className="bi bi-person-gear text-primary me-2"></i>
-                  Edit Public Profile
+                  {isOnboarding ? "Complete Your Profile Details" : "Edit Public Profile"}
                 </h5>
                 <button
                   type="button"
@@ -360,7 +447,7 @@ export default function UserProfileHeader({
                       <input
                         type="url"
                         className="form-control"
-                        placeholder="https://example.com/my-photo.jpg"
+                        placeholder="https://images.unsplash.com/... or direct image link"
                         value={formData.avatarUrl}
                         onChange={(e) => {
                           setAvatarError(false);
@@ -368,11 +455,11 @@ export default function UserProfileHeader({
                         }}
                       />
                       <div className="form-text">
-                        Direct link to your avatar image (or leave blank to use your name initials).
+                        Link to your profile photo (leave blank to display your name initials).
                       </div>
                     </div>
 
-                    <div className="col-12">
+                    <div className="col-md-6">
                       <label className="form-label fw-semibold">Headline / Role</label>
                       <input
                         type="text"
@@ -383,12 +470,23 @@ export default function UserProfileHeader({
                       />
                     </div>
 
+                    <div className="col-md-6">
+                      <label className="form-label fw-semibold">Skills / Tech Focus (comma-separated)</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        placeholder="e.g. React, Node.js, Python, PostgreSQL"
+                        value={formData.skills}
+                        onChange={(e) => setFormData({ ...formData, skills: e.target.value })}
+                      />
+                    </div>
+
                     <div className="col-12">
                       <label className="form-label fw-semibold">Bio</label>
                       <textarea
                         className="form-control"
                         rows="3"
-                        placeholder="Tell the hackathon community about yourself, your interests, and what you love building..."
+                        placeholder="Tell the hackathon community about yourself, your skills, and what you love building..."
                         value={formData.bio}
                         onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
                       ></textarea>
@@ -471,4 +569,3 @@ export default function UserProfileHeader({
     </div>
   );
 }
-

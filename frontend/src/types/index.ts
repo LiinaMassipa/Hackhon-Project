@@ -23,11 +23,13 @@ export interface UserProfile {
   email?: string;
   avatarUrl?: string;
   headline?: string;
+  skills?: string;
   bio?: string;
   location?: string;
   joinedDate?: string;
   socialLinks?: UserSocialLinks;
   metrics?: UserMetrics;
+  hasProfileData?: boolean;
 }
 
 export interface ProjectItem {

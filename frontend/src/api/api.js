@@ -79,9 +79,10 @@ export const projectsApi = {
 };
 
 export const usersApi = {
+  getMe: () => request("/users/profile"),
   getProfile: (userId) => request(`/users/${userId}`),
-  updateProfile: (userId, data) =>
-    request(`/users/${userId}`, {
+  updateProfile: (data) =>
+    request("/users/profile", {
       method: "PUT",
       body: JSON.stringify(data),
     }),

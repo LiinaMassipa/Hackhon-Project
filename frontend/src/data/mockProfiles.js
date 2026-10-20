@@ -6,10 +6,10 @@ export const mockProfiles = {
   // Primary default authenticated user
   1: {
     id: 1,
-    username: "alex_rivera",
-    name: "Alex Rivera",
-    email: "alex.rivera@example.com",
-    avatarUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80",
+    username: "alexa",
+    name: "Alex King",
+    email: "alex@example.com",
+    avatarUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format",
     headline: "Full-Stack Engineer & Open Source Hacker ⚡",
     bio: "Passionate about creating human-centric digital experiences and green tech solutions. Building scalable apps with React, Node.js, and Cloud Native tools.",
     location: "San Francisco, CA",
