@@ -84,7 +84,7 @@ export default function Navbar() {
             {isAuthenticated ? (
               <>
                 <span className="navbar-text">
-                  👋 Welcome, {user?.name || "User"}!
+                  Hi, {user?.name || "User"}!
                 </span>
                 <Link to="/submit" className="sg-btn-primary">
                   Submit Project
