@@ -14,7 +14,7 @@ function badgeClass(tech) {
   return BADGE_CLASS[tech.toLowerCase()] || "sg-badge-default";
 }
 
-export default function ProjectCard({ project = {} }) {
+export default function ProjectCard({ project = {}, isOwner = false, onEdit, onDelete }) {
   const title = project.title || project.name || "Untitled Project";
   const tagline = project.tagline || project.description || "";
   const rating = Number(project.rating || 0).toFixed(1);
@@ -47,7 +47,7 @@ export default function ProjectCard({ project = {} }) {
     }
   }
 
-return (
+  return (
     <Link to={`/projects/${project.id || project._id}`} className="text-decoration-none">
       <div className="sg-project-card">
         <div className={`sg-project-thumb ${imageUrl ? "has-image" : "no-image"}`}>
@@ -87,6 +87,33 @@ return (
               {votes}
             </span>
           </div>
+
+          {isOwner && (
+            <div className="d-flex gap-2 mt-3 pt-2 border-top">
+              <button
+                type="button"
+                className="btn btn-sm btn-outline-primary flex-fill"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onEdit?.(project);
+                }}
+              >
+                <i className="bi bi-pencil me-1"></i> Edit
+              </button>
+              <button
+                type="button"
+                className="btn btn-sm btn-outline-danger flex-fill"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onDelete?.(project);
+                }}
+              >
+                <i className="bi bi-trash me-1"></i> Delete
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </Link>

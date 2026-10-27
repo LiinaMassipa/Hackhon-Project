@@ -83,9 +83,12 @@ export default function Navbar() {
           <div className="d-flex gap-2 align-items-center">
             {isAuthenticated ? (
               <>
-                <span className="navbar-text">
-                  Hi, {user?.name || "User"}!
-                </span>
+                <Link to="/profile" className="navbar-text text-decoration-none me-1">
+                  Hi, <strong>{user?.name || "User"}</strong>!
+                </Link>
+                <Link to="/profile" className="sg-btn-outline-primary py-1 px-3 me-1">
+                  Profile
+                </Link>
                 <Link to="/submit" className="sg-btn-primary">
                   Submit Project
                 </Link>
@@ -109,3 +112,4 @@ export default function Navbar() {
     </nav>
   );
 }
+
