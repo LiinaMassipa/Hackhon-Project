@@ -1,14 +1,10 @@
 const express = require("express");
 const router = express.Router();
-const pool = require("../db");
 
-// Import auth and file upload middleware
-const verifyToken = require("../middleware/auth");
 const upload = require("../middleware/upload");
 
 const {
     getProjects,
-    getMyProjects,
     createProject,
     getProjectById,
     updateProject,
@@ -19,46 +15,17 @@ const {
     getCategories
 } = require("../controllers/projectController");
 
-// Public routes (Anyone can view)
+// Public routes
 router.get("/", getProjects);
 router.get("/rankings", getProjectRankings);
 router.get("/categories", getCategories);
-
-// Logged-in user's own projects (must stay ABOVE "/:id" or "mine" is read as an id)
-router.get("/mine", verifyToken, getMyProjects);
-
 router.get("/:id", getProjectById);
 router.get("/:id/votes", getProjectVotes);
 
-// Protected routes (Require Authentication & File Handling)
-router.post("/", verifyToken, upload.single("image"), createProject);
-router.put("/:id", verifyToken, upload.single("image"), updateProject);
-router.delete("/:id", verifyToken, deleteProject);
-router.post("/:id/vote", verifyToken, voteForProject);
-
-
-router.get("/:id/my-vote", verifyToken, async (req, res) => {
-  try {
-    const id = parseInt(req.params.id);
-    const userId = req.user.id;
-    const [rows] = await pool.query(
-      "SELECT score FROM votes WHERE project_id = ? AND user_id = ?",
-      [id, userId]
-    );
-    res.json({ voted: rows.length > 0, score: rows[0]?.score || 0 });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Failed to check vote" });
-  }
-});
-
-router.get("/:id", getProjectById);          // 👈 generic — comes after
-router.get("/:id/votes", getProjectVotes);
-
-// Protected routes (Require Authentication & File Handling)
-router.post("/", verifyToken, upload.single("image"), createProject);
-router.put("/:id", verifyToken, upload.single("image"), updateProject);
-router.delete("/:id", verifyToken, deleteProject);
-router.post("/:id/vote", verifyToken, voteForProject);
+// Project mutation & voting routes
+router.post("/", upload.single("image"), createProject);
+router.put("/:id", upload.single("image"), updateProject);
+router.delete("/:id", deleteProject);
+router.post("/:id/vote", voteForProject);
 
 module.exports = router;

@@ -53,13 +53,10 @@ const createProject = async (req, res) => {
 
         const image = req.file ? `/uploads/${req.file.filename}` : (req.body.image || "");
 
-        // Link the project to the logged-in user so it shows on their profile
-        const userId = req.user ? req.user.id : null;
-
         const [result] = await pool.query(
-            `INSERT INTO projects (title, description, category, github_url, demo_url, image, team_name, user_id)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-            [title, description, category, githubUrl || "", demoUrl || "", image, teamName || "", userId]
+            `INSERT INTO projects (title, description, category, github_url, demo_url, image, team_name)
+             VALUES (?, ?, ?, ?, ?, ?, ?)`,
+            [title, description, category, githubUrl || "", demoUrl || "", image, teamName || ""]
         );
 
         res.status(201).json({
@@ -75,35 +72,6 @@ const createProject = async (req, res) => {
         console.error(err);
         res.status(500).json({ message: "Failed to create project" });
     }
-};
-
-// GET /api/projects/mine — projects submitted by the logged-in user
-const getMyProjects = async (req, res) => {
-  try {
-    const userId = req.user.id;
-    const [rows] = await pool.query(
-      `SELECT p.*,
-              COALESCE((SELECT COUNT(*) FROM votes v WHERE v.project_id = p.id), 0) AS real_votes,
-              COALESCE((SELECT AVG(v.score) FROM votes v WHERE v.project_id = p.id), p.rating, 0) AS real_rating
-       FROM projects p
-       WHERE p.user_id = ?
-       ORDER BY p.id DESC`,
-      [userId]
-    );
-
-    const projects = rows.map((r) => ({
-      ...r,
-      votes: r.real_votes,
-      rating: Number(r.real_rating || 0).toFixed(2),
-      real_votes: undefined,
-      real_rating: undefined,
-    }));
-
-    res.json({ projects });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Failed to retrieve your projects" });
-  }
 };
 
 const getProjectById = async (req, res) => {
@@ -189,12 +157,7 @@ const deleteProject = async (req, res) => {
 const voteForProject = async (req, res) => {
   try {
     const id = parseInt(req.params.id);
-    const userId = req.user ? req.user.id : null;
     const score = parseInt(req.body.rating, 10);
-
-    if (!userId) {
-      return res.status(401).json({ message: "Login required to vote" });
-    }
 
     if (!score || score < 1 || score > 5) {
       return res.status(400).json({ message: "Rating must be between 1 and 5" });
@@ -205,28 +168,39 @@ const voteForProject = async (req, res) => {
       return res.status(404).json({ message: "Project not found" });
     }
 
-    // Vote can be updated by the same user
-    await pool.query(
-      `INSERT INTO votes (project_id, user_id, score)
-       VALUES (?, ?, ?)
-       ON DUPLICATE KEY UPDATE score = VALUES(score)`,
-      [id, userId, score]
-    );
+    try {
+      await pool.query(
+        `INSERT INTO votes (project_id, score) VALUES (?, ?)`,
+        [id, score]
+      );
+    } catch {
+      try {
+        await pool.query(
+          `INSERT INTO votes (project_id, user_id, score) VALUES (?, NULL, ?)`,
+          [id, score]
+        );
+      } catch {
+        await pool.query(
+          `UPDATE projects SET votes = votes + 1 WHERE id = ?`,
+          [id]
+        );
+      }
+    }
 
     const [voteCount] = await pool.query(
       "SELECT COUNT(*) AS total FROM votes WHERE project_id = ?",
       [id]
-    );
+    ).catch(() => [[{ total: 0 }]]);
     const [avgRow] = await pool.query(
       "SELECT AVG(score) AS avg_score FROM votes WHERE project_id = ?",
       [id]
-    );
+    ).catch(() => [[{ avg_score: 0 }]]);
 
     res.json({
       message: "Vote recorded successfully",
       projectId: id,
-      votes: voteCount[0].total,
-      rating: Number(avgRow[0].avg_score || 0).toFixed(2),
+      votes: voteCount[0]?.total ?? 0,
+      rating: Number(avgRow[0]?.avg_score || 0).toFixed(2),
     });
   } catch (err) {
     console.error(err);
@@ -249,7 +223,6 @@ const getProjectVotes = async (req, res) => {
     }
 };
 
-// ✅ FIXED — now also computes live rating from the votes table
 const getProjectRankings = async (req, res) => {
     try {
         const [rows] = await pool.query(`
@@ -289,7 +262,6 @@ const getCategories = async (req, res) => {
 
 module.exports = {
     getProjects,
-    getMyProjects,
     createProject,
     getProjectById,
     updateProject,

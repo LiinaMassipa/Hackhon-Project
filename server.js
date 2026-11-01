@@ -3,8 +3,7 @@ const cors = require('cors');
 const path = require('path');
 require('dotenv').config();
 
-// Route Imports (adjust filenames if yours omit "Routes", e.g., './routes/auth')
-const authRoutes = require('./routes/auth');
+// Route Imports
 const projectRoutes = require('./routes/projectRoutes');
 
 const app = express();
@@ -22,7 +21,6 @@ app.get('/', (req, res) => {
 });
 
 // API Routes
-app.use('/api/auth', authRoutes);
 app.use('/api/projects', projectRoutes);
 
 // Handle unknown routes
@@ -30,7 +28,6 @@ app.use((req, res) => {
     res.status(404).json({ message: 'Endpoint not found' });
 });
 
-// Global error handler
 // Global error handler
 app.use((err, req, res, next) => {
     console.error(err.stack);

@@ -4,29 +4,8 @@
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
 
-// Routes that require authentication
-function isProtectedRoute(path, method) {
-  // POST, PUT, DELETE, PATCH are always protected
-  if (["POST", "PUT", "DELETE", "PATCH"].includes(method)) return true;
-  // Specific GET routes that need auth
-  return (
-    path.includes("/vote") ||
-    path.includes("/my-vote") ||
-    path.includes("/projects/mine") ||
-    path.includes("/auth/me")
-  );
-}
-
 async function request(path, options = {}) {
-  const token = localStorage.getItem("token");
   const headers = {};
-
-  const method = options.method || "GET";
-  const isProtected = isProtectedRoute(path, method);
-
-  if (token && isProtected) {
-    headers["Authorization"] = `Bearer ${token}`;
-  }
 
   // Only set application/json if the body is NOT FormData
   if (!(options.body instanceof FormData)) {
@@ -67,10 +46,7 @@ export const projectsApi = {
     return request(`/projects${query ? `?${query}` : ""}`, { method: "GET" });
   },
   get: (id) => request(`/projects/${id}`, { method: "GET" }),
-  getMyVote: (id) => request(`/projects/${id}/my-vote`, { method: "GET" }),
-  mine: () => request("/projects/mine", { method: "GET" }),
-
- rankings: () => request("/projects/rankings", { method: "GET" }),
+  rankings: () => request("/projects/rankings", { method: "GET" }),
 
   create: (payload) => {
     const isFormData = payload instanceof FormData;
@@ -93,19 +69,5 @@ export const projectsApi = {
     request(`/projects/${id}/vote`, {
       method: "POST",
       body: JSON.stringify({ rating }),
-    }),
-};
-
-export const authApi = {
-  me: () => request("/auth/me", { method: "GET" }),
-  updateProfile: (name) =>
-    request("/auth/profile", {
-      method: "PUT",
-      body: JSON.stringify({ name }),
-    }),
-  changePassword: (currentPassword, newPassword) =>
-    request("/auth/password", {
-      method: "PUT",
-      body: JSON.stringify({ currentPassword, newPassword }),
     }),
 };

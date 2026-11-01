@@ -1,41 +1,6 @@
-import { NavLink, Link, useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { NavLink, Link } from "react-router-dom";
 
 export default function Navbar() {
-  const navigate = useNavigate();
-  const [user, setUser] = useState(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(
-    !!localStorage.getItem("token")
-  );
-
-  useEffect(() => {
-    const syncAuth = () => {
-      const token = localStorage.getItem("token");
-      setIsAuthenticated(!!token);
-
-      const userData = localStorage.getItem("user");
-      if (userData) {
-        try {
-          setUser(JSON.parse(userData));
-        } catch (e) {
-          console.error("Error parsing user data:", e);
-          setUser(null);
-        }
-      } else {
-        setUser(null);
-      }
-    };
-
-    syncAuth();
-    window.addEventListener("auth-change", syncAuth);
-    window.addEventListener("storage", syncAuth);
-
-    return () => {
-      window.removeEventListener("auth-change", syncAuth);
-      window.removeEventListener("storage", syncAuth);
-    };
-  }, []);
-
   const navItem = (to, label) => (
     <NavLink
       to={to}
@@ -45,13 +10,6 @@ export default function Navbar() {
       {label}
     </NavLink>
   );
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    window.dispatchEvent(new Event("auth-change"));
-    navigate("/");
-  };
 
   return (
     <nav className="navbar navbar-expand-lg sg-navbar sticky-top">
@@ -78,38 +36,13 @@ export default function Navbar() {
             <li className="nav-item">{navItem("/", "Home")}</li>
             <li className="nav-item">{navItem("/gallery", "Projects")}</li>
             <li className="nav-item">{navItem("/leaderboard", "Rankings")}</li>
+            <li className="nav-item">{navItem("/profile", "Profile")}</li>
           </ul>
 
           <div className="d-flex gap-2 align-items-center">
-            {isAuthenticated ? (
-              <>
-                <Link
-                  to="/profile"
-                  className="d-flex align-items-center text-decoration-none navbar-text"
-                  title="View your profile"
-                >
-                  <span className="sg-user-avatar" aria-hidden="true">
-                    {(user?.name || "U").trim().charAt(0).toUpperCase()}
-                  </span>
-                  {user?.name || "My Profile"}
-                </Link>
-                <Link to="/submit" className="sg-btn-primary">
-                  Submit Project
-                </Link>
-                <button onClick={handleLogout} className="sg-btn-outline-danger">
-                  Logout
-                </button>
-              </>
-            ) : (
-              <>
-                <Link to="/login" className="sg-btn-outline-primary">
-                  Login
-                </Link>
-                <Link to="/register" className="sg-btn-primary">
-                  Register
-                </Link>
-              </>
-            )}
+            <Link to="/submit" className="sg-btn-primary">
+              Submit Project
+            </Link>
           </div>
         </div>
       </div>
