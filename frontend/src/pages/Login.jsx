@@ -7,8 +7,8 @@ export default function Login() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const location = useLocation();  
-  const from = location.state?.from?.pathname || "/";            
+  const location = useLocation();
+  const from = location.state?.from?.pathname || "/";
 
   const handleLogin = async (e) => {
     e.preventDefault();

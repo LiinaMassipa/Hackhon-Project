@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { ErrorState } from "../components/StateBlocks";
 import { projectsApi } from "../api/api";
 
 export default function ProjectDetails() {
   const { id } = useParams();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [project, setProject] = useState(null);
   const [status, setStatus] = useState("loading");
   const [myRating, setMyRating] = useState(0);
@@ -51,6 +53,11 @@ export default function ProjectDetails() {
   }, [id]);
 
   async function handleVote(rating) {
+    if (!localStorage.getItem("token")) {
+      navigate("/login", { state: { from: location } });
+      return;
+    }
+
     setMyRating(rating);
     setVoteState("submitting");
 

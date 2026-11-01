@@ -31,11 +31,10 @@ export default function Home() {
     };
   }, []);
 
-  const totalTeams = new Set(projects.map((p) => p.team_name || p.team)).size;
+  const totalTeams = new Set(projects.map((project) => project.team_name || project.team)).size;
 
   return (
     <>
-      {/* ---------- Hero ---------- */}
       <section className="sg-hero">
         <div className="container position-relative">
           <div className="row align-items-center">
@@ -68,12 +67,36 @@ export default function Home() {
                     <span className="rounded-circle" style={{ width: 10, height: 10, background: "#34d399", display: "inline-block" }}></span>
                   </div>
                   <div className="row g-2">
-                    {projects.slice(0, 6).map((p) => (
-                      <div className="col-4" key={p.id}>
+                    {projects.slice(0, 6).map((project) => (
+                      <div className="col-4" key={project.id}>
                         <div className="rounded" style={{ height: 60, background: "linear-gradient(135deg,#a29bfe,#74b9ff)" }}></div>
                       </div>
                     ))}
                   </div>
+                </div>
+                <div
+                  className="sg-floating-badge sg-badge-delay-1"
+                  style={{ top: -18, right: "35%", background: "#7c5cfc" }}
+                >
+                  <i className="bi bi-code-slash"></i>
+                </div>
+                <div
+                  className="sg-floating-badge sg-badge-delay-2"
+                  style={{ top: 10, right: -20, background: "#10b981" }}
+                >
+                  <i className="bi bi-people-fill"></i>
+                </div>
+                <div
+                  className="sg-floating-badge sg-badge-delay-3"
+                  style={{ bottom: -20, right: -10, background: "#ec4899" }}
+                >
+                  <i className="bi bi-heart-fill"></i>
+                </div>
+                <div
+                  className="sg-floating-badge sg-badge-delay-4"
+                  style={{ top: "40%", left: -20, background: "#3b82f6" }}
+                >
+                  <i className="bi bi-star-fill"></i>
                 </div>
               </div>
             </div>
@@ -81,11 +104,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ---------- Featured + Stats (off-white band) ---------- */}
       <div className="sg-section-alt py-5">
         <div className="container">
-
-          {/* Featured Projects */}
           <div className="d-flex justify-content-between align-items-center mb-4">
             <h2 className="sg-section-title">🚀 Featured Projects</h2>
             <Link to="/gallery" className="fw-semibold" style={{ color: "var(--sg-accent)" }}>
@@ -97,15 +117,14 @@ export default function Home() {
           {status === "error" && <ErrorState message="Couldn't load projects." />}
           {status === "ready" && (
             <div className="row g-4">
-              {projects.map((p) => (
-                <div className="col-12 col-sm-6 col-lg-4 col-xl" key={p.id}>
-                  <ProjectCard project={p} />
+              {projects.map((project) => (
+                <div className="col-12 col-sm-6 col-lg-4 col-xl" key={project.id}>
+                  <ProjectCard project={project} />
                 </div>
               ))}
             </div>
           )}
 
-          {/* Stats */}
           <div className="row g-3 mt-5">
             <div className="col-6 col-md-3">
               <div className="sg-stat-card">
@@ -145,7 +164,6 @@ export default function Home() {
             </div>
           </div>
 
-          {/* CTA panel */}
           <div className="sg-cta-panel mt-4">
             <h4>Have an amazing project?</h4>
             <p className="text-muted mb-3">Share your innovation with the world.</p>
@@ -153,7 +171,6 @@ export default function Home() {
               Submit Your Project
             </Link>
           </div>
-
         </div>
       </div>
     </>

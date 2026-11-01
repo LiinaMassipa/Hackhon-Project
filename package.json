@@ -1,6 +1,7 @@
 {
   "workspaces": ["backend", "frontend"],
   "scripts": {
+    "start": "node backend/server.js",
     "test": "npm run test --workspaces"
   },
   "dependencies": {

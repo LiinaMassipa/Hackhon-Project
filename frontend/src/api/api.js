@@ -4,26 +4,20 @@
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
 
-// Routes that require authentication
 function isProtectedRoute(path, method) {
-  // POST, PUT, DELETE, PATCH are always protected
   if (["POST", "PUT", "DELETE", "PATCH"].includes(method)) return true;
-  // Specific GET routes that need auth
   return path.includes("/vote") || path.includes("/my-vote");
 }
 
 async function request(path, options = {}) {
   const token = localStorage.getItem("token");
+  const method = options.method || "GET";
   const headers = {};
 
-  const method = options.method || "GET";
-  const isProtected = isProtectedRoute(path, method);
-
-  if (token && isProtected) {
-    headers["Authorization"] = `Bearer ${token}`;
+  if (token && isProtectedRoute(path, method)) {
+    headers.Authorization = "Bearer " + token;
   }
 
-  // Only set application/json if the body is NOT FormData
   if (!(options.body instanceof FormData)) {
     headers["Content-Type"] = "application/json";
   }
@@ -40,7 +34,7 @@ async function request(path, options = {}) {
   try {
     data = await res.json();
   } catch {
-    // no JSON body — fine for some responses
+    // Some successful responses have no JSON body.
   }
 
   if (!res.ok) {
@@ -57,14 +51,13 @@ async function request(path, options = {}) {
 export const projectsApi = {
   list: (params = {}) => {
     const query = new URLSearchParams(
-      Object.fromEntries(Object.entries(params).filter(([, v]) => v))
+      Object.fromEntries(Object.entries(params).filter(([, value]) => value))
     ).toString();
     return request(`/projects${query ? `?${query}` : ""}`, { method: "GET" });
   },
   get: (id) => request(`/projects/${id}`, { method: "GET" }),
   getMyVote: (id) => request(`/projects/${id}/my-vote`, { method: "GET" }),
-
- rankings: () => request("/projects/rankings", { method: "GET" }),
+  rankings: () => request("/projects/rankings", { method: "GET" }),
 
   create: (payload) => {
     const isFormData = payload instanceof FormData;

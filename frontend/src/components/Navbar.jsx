@@ -78,6 +78,7 @@ export default function Navbar() {
             <li className="nav-item">{navItem("/", "Home")}</li>
             <li className="nav-item">{navItem("/gallery", "Projects")}</li>
             <li className="nav-item">{navItem("/leaderboard", "Rankings")}</li>
+            <li className="nav-item">{navItem("/profile", "Profile")}</li>
           </ul>
 
           <div className="d-flex gap-2 align-items-center">

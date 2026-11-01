@@ -610,3 +610,39 @@ a {
     font-size: 1.2rem;
   }
 }
+
+/* ==========================================================================
+   Profile page
+   ========================================================================== */
+
+.sg-profile-avatar {
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  background: var(--sg-accent);
+  color: var(--sg-white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 2.2rem;
+  flex-shrink: 0;
+}
+
+.sg-profile-stat {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--sg-text-dark);
+  line-height: 1.1;
+}
+
+.nav-pills .nav-link {
+  color: var(--sg-text-dark);
+  font-weight: 600;
+  border-radius: 10px;
+}
+
+.nav-pills .nav-link.active {
+  background: var(--sg-accent);
+  color: var(--sg-white);
+}

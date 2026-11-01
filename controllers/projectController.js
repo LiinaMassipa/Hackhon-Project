@@ -54,7 +54,7 @@ const createProject = async (req, res) => {
         const image = req.file ? `/uploads/${req.file.filename}` : (req.body.image || "");
 
         const [result] = await pool.query(
-            `INSERT INTO projects (title, description, category, github_url, demo_url, image, team_name) 
+            `INSERT INTO projects (title, description, category, github_url, demo_url, image, team_name)
              VALUES (?, ?, ?, ?, ?, ?, ?)`,
             [title, description, category, githubUrl || "", demoUrl || "", image, teamName || ""]
         );

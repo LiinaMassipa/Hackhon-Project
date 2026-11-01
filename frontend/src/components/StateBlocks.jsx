@@ -26,7 +26,9 @@ export function EmptyState({
 }) {
   return (
     <div className="sg-state">
-      <i className={`bi ${icon}`} style={{ fontSize: "2.5rem" }}></i>
+      <div className="sg-state-icon" style={{ background: "#ede9fe", color: "#7c5cfc" }}>
+        <i className={`bi ${icon}`}></i>
+      </div>
       <h4 className="mt-3">{title}</h4>
       <p>{message}</p>
       {actionLabel && (
@@ -41,7 +43,9 @@ export function EmptyState({
 export function ErrorState({ message = "Something went wrong.", onRetry }) {
   return (
     <div className="sg-state">
-      <i className="bi bi-exclamation-triangle" style={{ fontSize: "2.5rem", color: "#dc2626" }}></i>
+      <div className="sg-state-icon" style={{ background: "#fee2e2", color: "#dc2626" }}>
+        <i className="bi bi-exclamation-triangle"></i>
+      </div>
       <h4 className="mt-3">We hit a snag</h4>
       <p>{message}</p>
       {onRetry && (
