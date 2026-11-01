@@ -1,13 +1,15 @@
 {
   "workspaces": ["backend", "frontend"],
   "scripts": {
-    "start": "node server.js",
+    "start": "node backend/server.js",
     "test": "npm run test --workspaces"
   },
   "dependencies": {
+    "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
     "multer": "^2.2.0",
     "mysql2": "^3.23.3"
   }

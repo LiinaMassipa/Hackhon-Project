@@ -1,6 +1,7 @@
 import { Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import ProtectedRoute from "./components/ProtectedRoute";
 import Home from "./pages/Home";
 import Gallery from "./pages/Gallery";
 import ProjectDetails from "./pages/ProjectDetails";
@@ -8,6 +9,8 @@ import SubmitProject from "./pages/SubmitProject";
 import Leaderboard from "./pages/Leaderboard";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
 
 export default function App() {
   return (
@@ -15,15 +18,21 @@ export default function App() {
       <Navbar />
       <main className="flex-grow-1">
         <Routes>
-          {/* Public routes */}
           <Route path="/" element={<Home />} />
           <Route path="/gallery" element={<Gallery />} />
           <Route path="/projects/:id" element={<ProjectDetails />} />
           <Route path="/leaderboard" element={<Leaderboard />} />
           <Route path="/profile" element={<Profile />} />
-          <Route path="/submit" element={<SubmitProject />} />
-
-          {/* 404 */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route
+            path="/submit"
+            element={
+              <ProtectedRoute>
+                <SubmitProject />
+              </ProtectedRoute>
+            }
+          />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>

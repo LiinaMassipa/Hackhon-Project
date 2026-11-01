@@ -3,7 +3,8 @@ to perform asynchronous database queries using await pool.query(...) directly in
 */
 
 const mysql = require('mysql2/promise');
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 
 const pool = mysql.createPool({
     host: process.env.DB_HOST,
@@ -12,7 +13,7 @@ const pool = mysql.createPool({
     database: process.env.DB_NAME,
     port: process.env.DB_PORT ? Number(process.env.DB_PORT) : 3306,
     waitForConnections: true,
-    connectionLimit: 10,
+    connectionLimit: 3,
     queueLimit: 0,
     ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false
 });

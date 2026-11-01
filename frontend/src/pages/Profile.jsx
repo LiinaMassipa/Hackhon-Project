@@ -30,8 +30,13 @@ export default function Profile() {
       <div className="sg-form-card mt-4">
         <h2 className="h5">Your profile</h2>
         <p className="text-muted mb-4">
-          This profile is read-only. Sign-in and account settings aren’t enabled
-          right now.
+          {user ? (
+            "This profile is read-only. Account settings aren't available yet."
+          ) : (
+            <>
+              <Link to="/login">Log in</Link> to view your account details.
+            </>
+          )}
         </p>
         <div className="d-flex flex-wrap gap-3">
           <Link to="/gallery" className="sg-btn-primary">
