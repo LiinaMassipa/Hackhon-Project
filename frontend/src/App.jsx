@@ -9,7 +9,9 @@ import SubmitProject from "./pages/SubmitProject";
 import Leaderboard from "./pages/Leaderboard";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
+
 
 export default function App() {
 
@@ -36,6 +38,15 @@ export default function App() {
     }
   />
 
+  <Route
+  path="/profile"
+  element={
+    <ProtectedRoute>
+      <Profile />
+    </ProtectedRoute>
+  }
+/>
+
   {/* 404 */}
   <Route path="*" element={<NotFound />} />
 </Routes>  
@@ -44,3 +55,4 @@ export default function App() {
     </div>
   );
 }
+

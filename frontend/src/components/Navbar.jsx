@@ -83,9 +83,9 @@ export default function Navbar() {
           <div className="d-flex gap-2 align-items-center">
             {isAuthenticated ? (
               <>
-                <span className="navbar-text">
-                  👋 Welcome, {user?.name || "User"}!
-                </span>
+                <Link to="/profile" className="navbar-text text-decoration-none">
+                  👤 {user?.name || "User"}
+                </Link>
                 <Link to="/submit" className="sg-btn-primary">
                   Submit Project
                 </Link>
