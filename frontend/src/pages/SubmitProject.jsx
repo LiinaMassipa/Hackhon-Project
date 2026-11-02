@@ -34,11 +34,12 @@ export default function SubmitProject() {
     if (!form.description.trim()) errs.push("A description is required.");
     if (!form.team.trim()) errs.push("Team name is required.");
     if (!imageFile) errs.push("A project image is required.");
-    if (form.github && !/^https?:\/\//i.test(form.github)) {
-      errs.push("GitHub link must start with http:// or https://");
-    }
-    if (form.demo && !/^https?:\/\//i.test(form.demo)) {
-      errs.push("Demo link must start with http:// or https://");
+    if (form.github && !/^https?:\/\/.+/i.test(form.github)) {
+       errs.push("GitHub link must start with http:// or https://");
+      }
+ 
+    if (form.demo && !/^https?:\/\/.+/i.test(form.demo)) {
+  errs.push("Demo link must start with http:// or https://");
     }
     return errs;
   }
@@ -60,10 +61,10 @@ export default function SubmitProject() {
     formData.append("name", form.name.trim());
     formData.append("tagline", form.tagline.trim());
     formData.append("description", form.description.trim());
-    formData.append("team", form.team.trim());
+    formData.append("teamName", form.team.trim());
     formData.append("category", form.category);
-    formData.append("github", form.github.trim());
-    formData.append("demo", form.demo.trim());
+    formData.append("githubUrl", form.github.trim());
+    formData.append("demoUrl", form.demo.trim());
 
     const techArray = form.techInput
       .split(",")

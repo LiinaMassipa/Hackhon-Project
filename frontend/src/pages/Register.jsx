@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, Link, useLocation } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 export default function Register() {
   const [name, setName] = useState("");
@@ -30,7 +30,7 @@ export default function Register() {
         localStorage.setItem("token", data.token);
         if (data.user) localStorage.setItem("user", JSON.stringify(data.user));
         window.dispatchEvent(new Event("auth-change"));
-        navigate({ replace: true});
+        navigate("/", { replace: true });
       } else {
         alert("Account created! Please log in.");
         navigate("/login");

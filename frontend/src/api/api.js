@@ -6,10 +6,17 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
 
 // Routes that require authentication
 function isProtectedRoute(path, method) {
-  // POST, PUT, DELETE, PATCH are always protected
-  if (["POST", "PUT", "DELETE", "PATCH"].includes(method)) return true;
-  // Specific GET routes that need auth
-  return path.includes("/vote") || path.includes("/my-vote");
+  // Routes that require authentication
+  if (["POST", "PUT", "DELETE", "PATCH"].includes(method)) {
+    return true;
+  }
+
+  // Protected GET routes
+  return (
+    path.includes("/vote") ||
+    path.includes("/my-vote") ||
+    path.includes("/my-projects")
+  );
 }
 
 async function request(path, options = {}) {
