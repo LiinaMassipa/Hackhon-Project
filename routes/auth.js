@@ -37,6 +37,7 @@ router.post('/register', async (req, res) => {
             user: { id: result.insertId, name, email, role: 'user' }
         });
     } catch (err) {
+        console.error('Registration failed:', err.code || err.message);
         res.status(500).json({ error: 'Server error during registration.' });
     }
 });
@@ -72,6 +73,7 @@ router.post('/login', async (req, res) => {
             user: { id: user.id, name: user.name, email: user.email, role: user.role }
         });
     } catch (err) {
+        console.error('Login failed:', err.code || err.message);
         res.status(500).json({ error: 'Server error during login.' });
     }
 });

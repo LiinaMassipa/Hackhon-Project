@@ -38,7 +38,9 @@ async function request(path, options = {}) {
   }
 
   if (!res.ok) {
-    const message = data?.error || `Request failed with status ${res.status}`;
+
+    const message =
+      data?.error || data?.message || `Request failed with status ${res.status}`;
     const error = new Error(message);
     error.details = data?.details;
     error.status = res.status;
