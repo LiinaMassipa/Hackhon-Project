@@ -1,10 +1,13 @@
 import { useState } from "react";
-import { useNavigate, Link , useLocation } from "react-router-dom";
+import { useNavigate, Link, useLocation, useSearchParams } from "react-router-dom";
+import SocialButtons from "../components/SocialButtons";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [searchParams] = useSearchParams();
+  // Social sign-in failures arrive as /login?error=...
+  const [error, setError] = useState(searchParams.get("error") || "");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();  
@@ -25,7 +28,7 @@ export default function Login() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || "Login failed");
+        throw new Error(data.error || data.message || "Login failed");
       }
 
       if (data.token) {
@@ -62,7 +65,12 @@ export default function Login() {
             />
           </div>
           <div className="mb-3">
-            <label className="form-label">Password</label>
+            <div className="d-flex justify-content-between align-items-baseline">
+              <label className="form-label">Password</label>
+              <Link to="/forgot-password" className="small">
+                Forgot password?
+              </Link>
+            </div>
             <input
               type="password"
               className="form-control"
@@ -79,6 +87,8 @@ export default function Login() {
             {loading ? "Logging in..." : "Login"}
           </button>
         </form>
+
+        <SocialButtons next={from} />
 
         <p className="text-muted mt-3 mb-0 text-center">
           Don't have an account? <Link to="/register">Register here</Link>

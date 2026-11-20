@@ -5,6 +5,8 @@ const express = require('express');
 const cors = require('cors');
 
 const authRoutes = require('../routes/auth');
+const passwordResetRoutes = require('../routes/passwordReset');
+const oauthRoutes = require('../routes/oauth');
 const projectRoutes = require('../routes/projectRoutes');
 
 const app = express();
@@ -22,6 +24,8 @@ app.get('/', (req, res) => {
 
 // API Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/auth', passwordResetRoutes);
+app.use('/api/auth', oauthRoutes);
 app.use('/api/projects', projectRoutes);
 
 // 404 handler

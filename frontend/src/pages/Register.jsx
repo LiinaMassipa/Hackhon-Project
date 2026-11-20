@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import SocialButtons from "../components/SocialButtons";
 
 export default function Register() {
   const [name, setName] = useState("");
@@ -83,6 +84,8 @@ export default function Register() {
             {loading ? "Creating Account..." : "Register"}
           </button>
         </form>
+
+        <SocialButtons next="/" />
 
         <p className="text-muted mt-3 mb-0 text-center">
           Already have an account? <Link to="/login">Log in here</Link>
