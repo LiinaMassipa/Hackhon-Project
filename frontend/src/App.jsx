@@ -13,6 +13,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import AuthCallback from "./pages/AuthCallback";
 import Profile from "./pages/Profile";
+import EditProfile from "./pages/EditProfile";
 import NotFound from "./pages/NotFound";
 
 
@@ -52,6 +53,15 @@ export default function App() {
     </ProtectedRoute>
   }
 />
+
+  <Route
+    path="/profile/edit"
+    element={
+      <ProtectedRoute>
+        <EditProfile />
+      </ProtectedRoute>
+    }
+  />
 
   {/* 404 */}
   <Route path="*" element={<NotFound />} />

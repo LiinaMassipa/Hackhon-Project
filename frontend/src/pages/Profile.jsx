@@ -1,8 +1,15 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import ProfileSettingsModal from "../components/ProfileSettingsModal";
+
 export default function Profile() {
+  const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user"));
+  const [showSettings, setShowSettings] = useState(false);
 
   return (
-    <div className="container py-5">
+    <>
+      <div className="container py-5">
 
       {/* Profile Header */}
       <div className="text-center mb-5">
@@ -19,7 +26,7 @@ export default function Profile() {
           {user?.email || "No email available"}
         </p>
 
-        <button className="sg-btn-primary">
+        <button className="sg-btn-primary" onClick={() => navigate("/profile/edit")}>
           Edit Profile
         </button>
       </div>
@@ -45,7 +52,10 @@ export default function Profile() {
           <h4 className="mb-3">⚙️ Settings</h4>
 
           <div className="list-group">
-            <button className="list-group-item list-group-item-action">
+            <button
+              className="list-group-item list-group-item-action"
+              onClick={() => setShowSettings(true)}
+            >
               Profile Settings
             </button>
 
@@ -57,5 +67,12 @@ export default function Profile() {
       </div>
 
     </div>
+
+      {/* Profile Settings Modal */}
+      <ProfileSettingsModal
+        open={showSettings}
+        onClose={() => setShowSettings(false)}
+      />
+    </>
   );
 }
